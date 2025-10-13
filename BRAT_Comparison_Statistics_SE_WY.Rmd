@@ -1,0 +1,446 @@
+---
+title: "BRAT Comparison Statistics"
+output: html_document
+date: "2025-10-08"
+---
+
+#Written by Michelle Andruss
+#Workshoped with Andrew Arlt and Jessie Moravek
+#Last Updated: 10/9/2025
+
+
+#Import Libraries
+```{r include=FALSE}
+
+library(tidyverse)
+library(ggplot2)
+library(yardstick)
+library(dplyr)
+library(Metrics)
+library(caret)
+library(ggpmisc)
+
+```
+
+#Import Data 
+```{r}
+#Import Observed VS Predicted CSVs
+
+#Original BRAT Version
+OG <- read_csv("SE_WY_Observed_Capacity.csv")
+
+#Survey Upcoded BRAT Version
+SURV <- read_csv("SE_WY_UPCODED_Observed_Capacity.csv")
+
+#Dam Freq > 100 Upcoded BRAT Version
+ALL <- read_csv("SE_WY_ALL_Observed_Capacity.csv")
+
+#Preferred Upcoded BRAT Version
+PREF <- read_csv("SE_WY_PREF_UPCODED_Observed_Capacity.csv")
+```
+
+
+##### STEP 1: JUSTIFY CHANGES AND MODEL UPDATES ####################################################
+##### Multilinear Regression for Observed Beaver Capacity 
+```{r}
+#Significant Variables in the BRAT Attribute Table
+
+#iGeo_Len - Reach Length
+#iHyd_SPLow - low flow and slope
+#iHyd_SP2 - 
+#iGeo_Slope -
+#iVeg100EX - Average Vegetation Code within 100 meters
+#iVeg_30EX Average Vegetation Code within 30 meters
+#iGeo_DA
+#iGeo_ElMin
+#iGeo_ElMax
+
+#BASE CODE
+#MLR_Version <- lm(Observed_Dam_Capacity_Variable ~ Important_Variable_1 + Important_Var_2)
+#summary(MLR_Version)
+
+
+#Multilinear Regression for Observed Beaver Capacity on all segments 
+MLR_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA + iGeo_ElMin + iGeo_ElMax ,
+  data = OG)
+
+summary(MLR_Observed)
+
+#Subset for only segments with observed capacity
+Non_Zero_OG <- subset(OG, DamKM != 0)
+
+#Multilinear Regression for Observed Beaver Capacity on segments with observed capacity
+MLR_subsetted_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA + iGeo_ElMin + iGeo_ElMax ,
+  data = Non_Zero_OG)
+
+summary(MLR_subsetted_Observed)
+
+```
+
+
+##### STEP 2: RUN STATISTICS FOR COMPARISON ########################################################
+#Clean Up Data
+```{r}
+
+#subset out data based on output of multilinear regression
+#subset_version <- subset(df, Variable (=, !=, >, <, =>, =<) value, etc)
+
+
+
+
+#Subset data for segments with observed capacity and stream segments => 300
+subset_OG <- subset(OG, DamKM != 0 & iGeo_Len >= 300)
+subset_ALL <- subset(ALL, DamKM != 0 & iGeo_Len >= 300)
+subset_SURV <- subset(SURV, DamKM != 0 & iGeo_Len >= 300)
+subset_PREF <- subset(PREF, DamKM != 0 & iGeo_Len >= 300)
+
+#Subset data for stream segments => 300
+geo_OG <- subset(OG, iGeo_Len >= 300)
+geo_ALL <- subset(ALL, iGeo_Len >= 300)
+geo_SURV <- subset(SURV, iGeo_Len >= 300)
+geo_PREF <- subset(PREF, iGeo_Len >= 300)
+```
+
+#### Multilinear Regression Adjusted R^2 Value ##
+```{r}
+#Create a function to run a multilinear regression for predicted values and important variables determined earlier
+MLR_oCC_EX <- function(df, title) {
+  
+  MLR <- lm(oCC_EX ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA + iGeo_ElMin + iGeo_ElMax ,
+  data = df)
+  
+  print(title)
+  summary(MLR)
+}
+
+#Call the function with your data 
+#MLR_oCC_EX(df, title)
+
+MLR_oCC_EX(geo_OG, "Original BRAT")
+MLR_oCC_EX(geo_ALL, "Dam Freq > 100 BRAT")
+MLR_oCC_EX(geo_SURV, "Survey Upcoded BRAT")
+MLR_oCC_EX(geo_PREF, "Preferred Veg Upcoded BRAT")
+```
+
+#### Aggregeated R^2 Value ##
+```{r}
+# Set up functions to  do the following: 
+
+#1) Add BRAT Capacity Categories to the subset data based on oCC_EX values
+categorize <- function(df) {
+  df %>% 
+  mutate(Category = case_when(oCC_EX >= 15 ~ "Pervasive",
+                    oCC_EX >= 5 ~ "Frequent",
+                    oCC_EX >= 1 ~ "Occasional",
+                    oCC_EX > 0 ~ "Rare",
+                    oCC_EX == 0 ~ "None"))
+
+}
+
+
+#2) Create a new data frame with values averaged and grouped by category
+group <- function(df) {
+  
+  grouped_df <- df %>%
+    group_by(Category) %>%
+    summarize(
+      mean_predicted = mean(oCC_EX, na.rm = TRUE),
+      mean_observed  = mean(DamKM, na.rm = TRUE)
+    )
+  
+  #Reorder categories for plotting
+  grouped_df$Category <- factor(
+    grouped_df$Category,
+    levels = c("Pervasive", "Frequent", "Occasional", "Rare", "None")
+  )
+
+  return(grouped_df)
+}
+
+#3) Plot the averaged values and return an R^2 value
+agg_r_plot <- function(grouped_df, title) {
+  
+  ggplot(grouped_df, aes(mean_predicted, mean_observed, col = Category)) +
+    geom_point(size = 3) +
+    stat_poly_line(mapping = aes(group = 1), se = FALSE, method = "lm", color = "black") +
+    stat_poly_eq(mapping = aes(group = 1)) +  # ensures stats aren't split by color
+    scale_color_manual(values = c(
+      "Pervasive" = "blue",
+      "Frequent" = "green",
+      "Occasional" = "yellow",
+      "Rare" = "orange",
+      "None" = "red"
+    )) +
+    labs(
+      title = title,
+      x = "Predicted Maximum Capacity (dams/km)",
+      y = "Observed Dam Density (dams/km)"
+    ) +
+    theme_classic()
+}
+
+
+#Call data to run through the categorize function
+#df <- categorize(df)
+
+geo_OG <- categorize(geo_OG)
+geo_ALL <- categorize(geo_ALL)
+geo_PREF <- categorize(geo_PREF)
+geo_SURV <- categorize(geo_SURV)
+
+subset_OG <- categorize(subset_OG)
+subset_ALL <- categorize(subset_ALL)
+subset_PREF <- categorize(subset_PREF)
+subset_SURV <- categorize(subset_SURV)
+
+
+#Call data to run through the group function
+#grouped_df <- group(df)
+
+grouped_OG <- group(geo_OG)
+grouped_ALL <- group(geo_ALL)
+grouped_PREF <- group(geo_PREF)
+grouped_SURV <- group(geo_SURV)
+
+
+#Call data to run through the aggregate R^2 plot function
+#agg_r_plot(grouped_df, "plot title")
+
+agg_r_plot(grouped_OG, "Original")
+agg_r_plot(grouped_ALL, "Dam Freq > 100")
+agg_r_plot(grouped_SURV, "Survey Upcoded")
+agg_r_plot(grouped_PREF, "Preferred Upcoded")
+
+```
+
+#### Electivity Index
+```{r}
+# Set up function to calculate Electivity Index
+EI <- function(df){
+  colnames(df)
+  
+  #calculate total drainage network in m
+  TotalDrainageNetwork <- sum(df$ReachLen)
+  TotalDams <- sum(df$Join_Count)
+
+  #group by category and calculate summary stats
+  table_df <- df %>% group_by(Category) %>%
+    summarize(StreamLength = sum(ReachLen)*.001,
+             PercentDrainageNetwork = 100*(sum(ReachLen)/TotalDrainageNetwork),
+              SurveyedDams = sum(Join_Count),
+              BratEstimatedCapacity = sum(mCC_EX_CT),
+              AvgSurveyedDamDensity = mean(DamKM),
+              AvgPredictedCapacity = mean(oCC_EX), 
+              PercentModeledCapacity = AvgSurveyedDamDensity/AvgPredictedCapacity*100,
+              Electivity = (sum(Join_Count)/TotalDams)/(sum(ReachLen)/TotalDrainageNetwork)) %>%
+    mutate(Category = factor(Category, levels = c("None","Rare","Occasional","Frequent","Pervasive"))) %>%
+    arrange(Category)
+  
+#From Jordan: We calculate Electivity by adding up the number of dams along reaches within a given BRAT capacity category (e.g., 'frequent')  divided by the total number of dams then dividing that by the length of channel in that category divided by the total length of channel. 
+#EIi=(ni/sum(n)) / (li/sum(l))
+
+#that way, if a lot of dams occur on a category with a small fraction of the length, it is essentially 'overemphasized' vs if there are relatively few dams on a category with a large fraction of the length they're 'underemphasized'. Values of ~1 are neutral and anything >1 is preference. Since it's not normalized, it doesn't work to quantitatively compare watersheds to each other, just to assess relative preference within a watershed.
+
+  table_df
+  
+
+}
+
+#call data to run through Electivity Index Function
+#EI(df)
+
+EI(geo_OG)
+EI(geo_ALL)
+EI(geo_SURV)
+EI(geo_PREF)
+
+```
+
+#### RMSE 
+```{r}
+#Create a function to calculate the Root Mean Square Error
+
+RMSE <- function(df, title) {
+  print(title)
+  rmse_value <- sqrt(mean((df$oCC_EX - df$DamKM)^2, na.rm = TRUE))
+  return(rmse_value)
+}
+
+#Call data to run through RMSE function 
+#RMSE(df, title)
+
+RMSE(geo_OG, "subset OG")
+RMSE(geo_ALL, "subset ALL")
+RMSE(geo_SURV, "subset SURV")
+RMSE(geo_PREF, "subset PREF")
+
+
+```
+
+#### Mean Absolute Error
+```{r}
+#Create a function to calculate Mean Absolute Error
+MAE <- function(df, title) {
+  print(title)
+  mean(abs(df$DamKM - df$oCC_EX))
+}
+
+
+#Call data to run MAE function 
+#MAE(df, title)
+MAE(geo_ALL, "subset ALL")
+MAE(geo_OG, "subset OG")
+MAE(geo_SURV, "subset SURV")
+MAE(geo_PREF, "subset PREF")
+
+
+```
+
+
+#### Confusion Matrix
+#Clean Up Data
+```{r}
+# Create function to Add Observed Categories to data 
+observed_cat <- function(df) {
+  df %>% 
+  mutate(Obs_Category = case_when(DamKM >= 15 ~ "Pervasive",
+                    DamKM >= 5 ~ "Frequent",
+                    DamKM >= 1 ~ "Occasional",
+                    DamKM > 0 ~ "Rare",
+                    DamKM == 0 ~ "None"))
+
+}
+
+#Call function to Add Observed Categories to data
+#observed_cat(df)
+
+geo_OG <- observed_cat(geo_OG)
+geo_ALL <- observed_cat(geo_ALL)
+geo_PREF <- observed_cat(geo_PREF)
+geo_SURV <- observed_cat(geo_SURV)
+
+
+subset_OG <- observed_cat(subset_OG)
+subset_ALL <- observed_cat(subset_ALL)
+subset_PREF <- observed_cat(subset_PREF)
+subset_SURV <- observed_cat(subset_SURV)
+
+
+```
+
+# Confusion Matrix Table and Plot
+```{r}
+# Create function to create a confusion matrix table and plot
+CM <- function(df, title) {
+
+  categories <- c("Pervasive", "Frequent", "Occasional", "Rare", "None")
+  df <- df %>%
+    mutate(
+      Category = factor(Category, levels = categories),
+      Obs_Category = factor(Obs_Category, levels = categories)
+    )
+
+  # Confusion matrix 
+  cm <- confusionMatrix(df$Category, df$Obs_Category)
+  print(cm)  # Accuracy, Kappa, per-class metrics
+
+  # Extract overall metrics
+  accuracy <- cm$overall['Accuracy']
+  kappa <- cm$overall['Kappa']
+
+  # Extract per-class metrics (precision, recall, F1)
+  per_class_metrics <- cm$byClass[, c("Precision", "Recall", "F1")]
+  print(accuracy)
+  print(kappa)
+  print(per_class_metrics)
+
+  # Compute average F1
+  avg_f1 <- mean(per_class_metrics[, "F1"], na.rm = TRUE)
+
+  # Create confusion matrix table for ggplot
+  cm_table <- df %>%
+    count(Obs_Category, Category) %>%
+    complete(Obs_Category = categories, Category = categories, fill = list(n = 0)) %>%
+    group_by(Obs_Category) %>%                   # Row-normalize for percentages
+    mutate(perc = n / sum(n)) %>%
+    ungroup()
+
+  # Merge F1 scores into cm_table for diagonal labels
+  f1_df <- data.frame(
+    Obs_Category = categories,
+    Category = categories,
+    F1 = per_class_metrics[, "F1"]
+  )
+
+  cm_table <- cm_table %>%
+    left_join(f1_df, by = c("Obs_Category", "Category"))
+
+  # Plot
+  ggplot(cm_table, aes(x = Category, y = Obs_Category, fill = perc)) +
+    geom_tile(color = "grey", linewidth = 0.3) +
+    
+   # Outline center boxes
+    geom_tile(
+      data = subset(cm_table, Obs_Category == Category),
+      color = "#032f3c", linewidth = 1, fill = NA
+    ) +
+    
+    #Text 
+    geom_text(aes(
+      label = ifelse(
+        Obs_Category == Category,
+        sprintf("%.1f%%\nF1: %.2f", perc * 100, F1),
+        sprintf("%.1f%%", perc * 100)
+      )
+    ),
+    color = "black", size = 4.5, na.rm = TRUE
+    ) +
+    
+    #Fill
+    scale_fill_gradientn(
+      colors = c("#f7fbff", "#87c4c6", "#046169"),
+      name = "Percent"
+    ) +
+    
+    
+    labs(
+      title = title,
+      subtitle = sprintf("MACRO F1: %.2f", avg_f1),
+      x = "Predicted Capacity Category",
+      y = "Observed Capacity Category"
+    ) +
+    
+    scale_x_discrete(limits = rev(categories)) +
+    scale_y_discrete(limits = rev(categories)) +
+    
+    theme_minimal(base_size = 14) +
+    theme(
+      plot.title = element_text(size = 18, face = "bold", hjust = 0.5),
+      plot.subtitle = element_text(size = 14, face = "bold", hjust = 0.5),
+      axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 12),
+      axis.text.y = element_text(size = 12),
+      axis.title = element_text(size = 14),
+      panel.grid = element_blank(),
+      legend.position = "right",
+      legend.title = element_text(size = 12, face = "bold"),
+      legend.text = element_text(size = 11)
+    )
+}
+
+# Call data to run CM function
+#CM(df, "title")
+
+CM(geo_OG, "Original")
+CM(geo_ALL, "Vegetation with Dam Freq > 100 Upcoded")
+CM(geo_SURV, "Surveyed Vegetation Upcoded")
+CM(geo_PREF, "Preferred Vegetation Upcoded")
+
+
+CM(subset_OG, "Original (Observations Only)")
+CM(subset_ALL, "Vegetation with Dam Freq > 100 Upcoded (Observations Only)")
+CM(subset_SURV, "Surveyed Vegetation Upcoded (Observations Only)")
+CM(subset_PREF, "Preferred Vegetation Upcoded (Observations Only)")
+
+```
+
+
