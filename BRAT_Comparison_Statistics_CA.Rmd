@@ -24,7 +24,7 @@ library(ggpmisc)
 
 #HUC 18090208######################################################################################
 ##Import Data 
-```{r}
+```{r include=FALSE}
 #Import Observed VS Predicted CSVs
 
 
@@ -87,15 +87,15 @@ summary(MLR_subsetted_Observed)
 #subset out data based on output of multilinear regression
 #subset_version <- subset(df, Variable (=, !=, >, <, =>, =<) value, etc)
 
-#Subset data for segments with observed capacity and stream segments => 299
-subset_OG <- subset(OG, DamKM != 0 & iGeo_Len >= 299)
-subset_REACH <- subset(REACH, DamKM != 0 & iGeo_Len >= 299)
-subset_UNI <- subset(UNI, DamKM != 0 & iGeo_Len >= 299)
+#Subset data for segments with observed capacity and stream segments => 40
+subset_OG <- subset(OG, DamKM != 0 & iGeo_Len >= 40)
+subset_REACH <- subset(REACH, DamKM != 0 & iGeo_Len >= 40)
+subset_UNI <- subset(UNI, DamKM != 0 & iGeo_Len >= 40)
 
-#Subset data for stream segments => 299
-geo_OG <- subset(OG, iGeo_Len >= 299)
-geo_REACH <- subset(REACH, iGeo_Len >= 299)
-geo_UNI <- subset(UNI, iGeo_Len >= 299)
+#Subset data for stream segments => 40
+geo_OG <- subset(OG, iGeo_Len >= 40)
+geo_REACH <- subset(REACH, iGeo_Len >= 40)
+geo_UNI <- subset(UNI, iGeo_Len >= 40)
 ```
 
 ### Multilinear Regression Adjusted R^2 Value ##
@@ -473,15 +473,15 @@ summary(MLR_subsetted_Observed)
 ## STEP 2: RUN STATISTICS FOR COMPARISON ########################################################
 ###Clean Up Data
 ```{r}
-#Subset data for segments with observed capacity and stream segments => 299
-subset_OG_18090101 <- subset(OG_18090101, DamKM != 0 & iGeo_Len >= 299)
-subset_REACH_18090101 <- subset(REACH_18090101, DamKM != 0 & iGeo_Len >= 299)
-subset_UNI_18090101 <- subset(UNI_18090101, DamKM != 0 & iGeo_Len >= 299)
+#Subset data for segments with observed capacity and stream segments => 40
+subset_OG_18090101 <- subset(OG_18090101, DamKM != 0 & iGeo_Len >= 40)
+subset_REACH_18090101 <- subset(REACH_18090101, DamKM != 0 & iGeo_Len >= 40)
+subset_UNI_18090101 <- subset(UNI_18090101, DamKM != 0 & iGeo_Len >= 40)
 
-#Subset data for stream segments => 299
-geo_OG_18090101 <- subset(OG_18090101, iGeo_Len >= 299)
-geo_REACH_18090101 <- subset(REACH_18090101, iGeo_Len >= 299)
-geo_UNI_18090101 <- subset(UNI_18090101, iGeo_Len >= 299)
+#Subset data for stream segments => 40
+geo_OG_18090101 <- subset(OG_18090101, iGeo_Len >= 40)
+geo_REACH_18090101 <- subset(REACH_18090101, iGeo_Len >= 40)
+geo_UNI_18090101 <- subset(UNI_18090101, iGeo_Len >= 40)
 ```
 
 ### Multilinear Regression Adjusted R^2 Value ##
@@ -638,15 +638,15 @@ summary(MLR_subsetted_Observed)
 ## STEP 2: RUN STATISTICS FOR COMPARISON ########################################################
 ###Clean Up Data
 ```{r}
-#Subset data for segments with observed capacity and stream segments => 299
-subset_OG_18070302 <- subset(OG_18070302, DamKM != 0 & iGeo_Len >= 299)
-subset_REACH_18070302 <- subset(REACH_18070302, DamKM != 0 & iGeo_Len >= 299)
-subset_UNI_18070302 <- subset(UNI_18070302, DamKM != 0 & iGeo_Len >= 299)
+#Subset data for segments with observed capacity and stream segments => 40
+subset_OG_18070302 <- subset(OG_18070302, DamKM != 0 & iGeo_Len >= 40)
+subset_REACH_18070302 <- subset(REACH_18070302, DamKM != 0 & iGeo_Len >= 40)
+subset_UNI_18070302 <- subset(UNI_18070302, DamKM != 0 & iGeo_Len >= 40)
 
-#Subset data for stream segments => 299
-geo_OG_18070302 <- subset(OG_18070302, iGeo_Len >= 299)
-geo_REACH_18070302 <- subset(REACH_18070302, iGeo_Len >= 299)
-geo_UNI_18070302 <- subset(UNI_18070302, iGeo_Len >= 299)
+#Subset data for stream segments => 40
+geo_OG_18070302 <- subset(OG_18070302, iGeo_Len >= 40)
+geo_REACH_18070302 <- subset(REACH_18070302, iGeo_Len >= 40)
+geo_UNI_18070302 <- subset(UNI_18070302, iGeo_Len >= 40)
 ```
 
 ### Multilinear Regression Adjusted R^2 Value ##
@@ -758,3 +758,1010 @@ CM(subset_UNI_18070302, "Universal Updates (Observations Only)")
 
 
 ```
+
+
+
+
+
+#HUC 18060005######################################################################################
+##Import Data 
+```{r}
+#Import Observed VS Predicted CSVs
+
+#Original BRAT Version
+OG_18060005 <- read_csv("18060005_NoVegUpdate_Observed_Capacity.csv")
+
+#By REACH_18060005 Updated BRAT Version
+REACH_18060005 <- read_csv("18060005_ByReachUpdate_Observed_Capacity.csv")
+
+#Universal updated BRAT version
+UNI_18060005 <- read_csv("18060005_UniversalUpdate_Observed_Capacity.csv")
+
+```
+
+
+## STEP 1: JUSTIFY CHANGES AND MODEL UPDATES ####################################################
+### Multilinear Regression for Observed Beaver Capacity 
+```{r}
+#Significant Variables in the BRAT Attribute Table
+
+#Multilinear Regression for Observed Beaver Capacity on all segments 
+MLR_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA ,
+  data = OG_18060005)
+
+summary(MLR_Observed)
+
+#Subset for only segments with observed capacity
+Non_Zero_OG_18060005 <- subset(OG_18060005, DamKM != 0)
+
+#Multilinear Regression for Observed Beaver Capacity on segments with observed capacity
+MLR_subsetted_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA ,
+  data = Non_Zero_OG_18060005)
+
+summary(MLR_subsetted_Observed)
+
+```
+
+
+## STEP 2: RUN STATISTICS FOR COMPARISON ########################################################
+###Clean Up Data
+```{r}
+#Subset data for segments with observed capacity and stream segments => 40
+subset_OG_18060005 <- subset(OG_18060005, DamKM != 0 & iGeo_Len >= 40)
+subset_REACH_18060005 <- subset(REACH_18060005, DamKM != 0 & iGeo_Len >= 40)
+subset_UNI_18060005 <- subset(UNI_18060005, DamKM != 0 & iGeo_Len >= 40)
+
+#Subset data for stream segments => 40
+geo_OG_18060005 <- subset(OG_18060005, iGeo_Len >= 40)
+geo_REACH_18060005 <- subset(REACH_18060005, iGeo_Len >= 40)
+geo_UNI_18060005 <- subset(UNI_18060005, iGeo_Len >= 40)
+```
+
+### Multilinear Regression Adjusted R^2 Value ##
+```{r}
+#Call the function with your data 
+#MLR_oCC_EX(df, title)
+
+MLR_oCC_EX(geo_OG_18060005, "Original BRAT")
+MLR_oCC_EX(geo_REACH_18060005, "By Reach Updated BRAT")
+MLR_oCC_EX(geo_UNI_18060005, "Universal Updated BRAT")
+```
+
+### Aggregeated R^2 Value ##
+```{r}
+#Call data to run through the categorize function
+#df <- categorize(df)
+
+geo_OG_18060005 <- categorize(geo_OG_18060005)
+geo_REACH_18060005 <- categorize(geo_REACH_18060005)
+geo_UNI_18060005 <- categorize(geo_UNI_18060005)
+
+subset_OG_18060005 <- categorize(subset_OG_18060005)
+subset_REACH_18060005 <- categorize(subset_REACH_18060005)
+subset_UNI_18060005 <- categorize(subset_UNI_18060005)
+
+
+#Call data to run through the group function
+#grouped_df <- group(df)
+
+grouped_OG_18060005 <- group(geo_OG_18060005)
+grouped_REACH_18060005 <- group(geo_REACH_18060005)
+grouped_UNI_18060005 <- group(geo_UNI_18060005)
+
+
+#Call data to run through the aggregate R^2 plot function
+#agg_r_plot(grouped_df, "plot title")
+
+agg_r_plot(grouped_OG_18060005, "Original")
+agg_r_plot(grouped_REACH_18060005, "By Reach Updates")
+agg_r_plot(grouped_UNI_18060005, "Universal Updates")
+
+```
+
+### Electivity Index
+```{r}
+#call data to run through Electivity Index Function
+#EI(df)
+
+EI(geo_OG_18060005)
+EI(geo_REACH_18060005)
+EI(geo_UNI_18060005)
+
+```
+
+### RMSE 
+```{r}
+#Call data to run through RMSE function 
+#RMSE(df, title)
+
+RMSE(geo_OG_18060005, "subset OG_18060005")
+RMSE(geo_REACH_18060005, "subset REACH_18060005")
+RMSE(geo_UNI_18060005, "subset UNI_18060005")
+
+```
+
+### Mean Absolute Error
+```{r}
+#Call data to run MAE function 
+#MAE(df, title)
+MAE(geo_OG_18060005, "subset OG_18060005")
+MAE(geo_REACH_18060005, "subset REACH_18060005")
+MAE(geo_UNI_18060005, "subset UNI_18060005")
+
+
+```
+
+
+### Confusion Matrix
+####Clean Up Data
+```{r}
+#Call function to Add Observed Categories to data
+#observed_cat(df)
+
+geo_OG_18060005 <- observed_cat(geo_OG_18060005)
+geo_REACH_18060005 <- observed_cat(geo_REACH_18060005)
+geo_UNI_18060005 <- observed_cat(geo_UNI_18060005)
+
+
+subset_OG_18060005 <- observed_cat(subset_OG_18060005)
+subset_REACH_18060005 <- observed_cat(subset_REACH_18060005)
+subset_UNI_18060005 <- observed_cat(subset_UNI_18060005)
+
+
+```
+
+#### Confusion Matrix Table and Plot
+```{r}
+# Call data to run CM function
+#CM(df, "title")
+
+CM(geo_OG_18060005, "Original")
+CM(geo_REACH_18060005, "By Reach Updates")
+CM(geo_UNI_18060005, "Universal Updates")
+
+
+CM(subset_OG_18060005, "Original (Observations Only)")
+CM(subset_REACH_18060005, "By Reach Updates (Observations Only)")
+CM(subset_UNI_18060005, "Universal Updates (Observations Only)")
+
+
+```
+
+
+
+#HUC 18050002######################################################################################
+##Import Data 
+```{r}
+#Import Observed VS Predicted CSVs
+
+#Original BRAT Version
+OG_18050002 <- read_csv("18050002_NoVegUpdate_Observed_Capacity.csv")
+
+#By REACH_18050002 Updated BRAT Version
+REACH_18050002 <- read_csv("18050002_ByReachUpdate_Observed_Capacity.csv")
+
+#Universal updated BRAT version
+UNI_18050002 <- read_csv("18050002_UniversalUpdate_Observed_Capacity.csv")
+
+```
+
+
+## STEP 1: JUSTIFY CHANGES AND MODEL UPDATES ####################################################
+### Multilinear Regression for Observed Beaver Capacity 
+```{r}
+#Significant Variables in the BRAT Attribute Table
+
+#Multilinear Regression for Observed Beaver Capacity on all segments 
+MLR_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA ,
+  data = OG_18050002)
+
+summary(MLR_Observed)
+
+#Subset for only segments with observed capacity
+Non_Zero_OG_18050002 <- subset(OG_18050002, DamKM != 0)
+
+#Multilinear Regression for Observed Beaver Capacity on segments with observed capacity
+MLR_subsetted_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA ,
+  data = Non_Zero_OG_18050002)
+
+summary(MLR_subsetted_Observed)
+
+```
+
+
+## STEP 2: RUN STATISTICS FOR COMPARISON ########################################################
+###Clean Up Data
+```{r}
+#Subset data for segments with observed capacity and stream segments => 40
+subset_OG_18050002 <- subset(OG_18050002, DamKM != 0 & iGeo_Len >= 40)
+subset_REACH_18050002 <- subset(REACH_18050002, DamKM != 0 & iGeo_Len >= 40)
+subset_UNI_18050002 <- subset(UNI_18050002, DamKM != 0 & iGeo_Len >= 40)
+
+#Subset data for stream segments => 40
+geo_OG_18050002 <- subset(OG_18050002, iGeo_Len >= 40)
+geo_REACH_18050002 <- subset(REACH_18050002, iGeo_Len >= 40)
+geo_UNI_18050002 <- subset(UNI_18050002, iGeo_Len >= 40)
+```
+
+### Multilinear Regression Adjusted R^2 Value ##
+```{r}
+#Call the function with your data 
+#MLR_oCC_EX(df, title)
+
+MLR_oCC_EX(geo_OG_18050002, "Original BRAT")
+MLR_oCC_EX(geo_REACH_18050002, "By Reach Updated BRAT")
+MLR_oCC_EX(geo_UNI_18050002, "Universal Updated BRAT")
+```
+
+### Aggregeated R^2 Value ##
+```{r}
+#Call data to run through the categorize function
+#df <- categorize(df)
+
+geo_OG_18050002 <- categorize(geo_OG_18050002)
+geo_REACH_18050002 <- categorize(geo_REACH_18050002)
+geo_UNI_18050002 <- categorize(geo_UNI_18050002)
+
+subset_OG_18050002 <- categorize(subset_OG_18050002)
+subset_REACH_18050002 <- categorize(subset_REACH_18050002)
+subset_UNI_18050002 <- categorize(subset_UNI_18050002)
+
+
+#Call data to run through the group function
+#grouped_df <- group(df)
+
+grouped_OG_18050002 <- group(geo_OG_18050002)
+grouped_REACH_18050002 <- group(geo_REACH_18050002)
+grouped_UNI_18050002 <- group(geo_UNI_18050002)
+
+
+#Call data to run through the aggregate R^2 plot function
+#agg_r_plot(grouped_df, "plot title")
+
+agg_r_plot(grouped_OG_18050002, "Original")
+agg_r_plot(grouped_REACH_18050002, "By Reach Updates")
+agg_r_plot(grouped_UNI_18050002, "Universal Updates")
+
+```
+
+### Electivity Index
+```{r}
+#call data to run through Electivity Index Function
+#EI(df)
+
+EI(geo_OG_18050002)
+EI(geo_REACH_18050002)
+EI(geo_UNI_18050002)
+
+```
+
+### RMSE 
+```{r}
+#Call data to run through RMSE function 
+#RMSE(df, title)
+
+RMSE(geo_OG_18050002, "subset OG_18050002")
+RMSE(geo_REACH_18050002, "subset REACH_18050002")
+RMSE(geo_UNI_18050002, "subset UNI_18050002")
+
+```
+
+### Mean Absolute Error
+```{r}
+#Call data to run MAE function 
+#MAE(df, title)
+MAE(geo_OG_18050002, "subset OG_18050002")
+MAE(geo_REACH_18050002, "subset REACH_18050002")
+MAE(geo_UNI_18050002, "subset UNI_18050002")
+
+
+```
+
+
+### Confusion Matrix
+####Clean Up Data
+```{r}
+#Call function to Add Observed Categories to data
+#observed_cat(df)
+
+geo_OG_18050002 <- observed_cat(geo_OG_18050002)
+geo_REACH_18050002 <- observed_cat(geo_REACH_18050002)
+geo_UNI_18050002 <- observed_cat(geo_UNI_18050002)
+
+
+subset_OG_18050002 <- observed_cat(subset_OG_18050002)
+subset_REACH_18050002 <- observed_cat(subset_REACH_18050002)
+subset_UNI_18050002 <- observed_cat(subset_UNI_18050002)
+
+
+```
+
+#### Confusion Matrix Table and Plot
+```{r}
+# Call data to run CM function
+#CM(df, "title")
+
+CM(geo_OG_18050002, "Original")
+CM(geo_REACH_18050002, "By Reach Updates")
+CM(geo_UNI_18050002, "Universal Updates")
+
+
+CM(subset_OG_18050002, "Original (Observations Only)")
+CM(subset_REACH_18050002, "By Reach Updates (Observations Only)")
+CM(subset_UNI_18050002, "Universal Updates (Observations Only)")
+
+
+```
+
+
+#HUC 18030002######################################################################################
+##Import Data 
+```{r}
+#Import Observed VS Predicted CSVs
+
+#Original BRAT Version
+OG_18030002 <- read_csv("18030002_NoVegUpdate_Observed_Capacity.csv")
+
+#By REACH_18030002 Updated BRAT Version
+REACH_18030002 <- read_csv("18030002_ByReachUpdate_Observed_Capacity.csv")
+
+#Universal updated BRAT version
+UNI_18030002 <- read_csv("18030002_UniversalUpdate_Observed_Capacity.csv")
+
+```
+
+
+## STEP 1: JUSTIFY CHANGES AND MODEL UPDATES ####################################################
+### Multilinear Regression for Observed Beaver Capacity 
+```{r}
+#Significant Variables in the BRAT Attribute Table
+
+#Multilinear Regression for Observed Beaver Capacity on all segments 
+MLR_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA ,
+  data = OG_18030002)
+
+summary(MLR_Observed)
+
+#Subset for only segments with observed capacity
+Non_Zero_OG_18030002 <- subset(OG_18030002, DamKM != 0)
+
+#Multilinear Regression for Observed Beaver Capacity on segments with observed capacity
+MLR_subsetted_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA ,
+  data = Non_Zero_OG_18030002)
+
+summary(MLR_subsetted_Observed)
+
+```
+
+
+## STEP 2: RUN STATISTICS FOR COMPARISON ########################################################
+###Clean Up Data
+```{r}
+#Subset data for segments with observed capacity and stream segments => 40
+subset_OG_18030002 <- subset(OG_18030002, DamKM != 0 & iGeo_Len >= 40)
+subset_REACH_18030002 <- subset(REACH_18030002, DamKM != 0 & iGeo_Len >= 40)
+subset_UNI_18030002 <- subset(UNI_18030002, DamKM != 0 & iGeo_Len >= 40)
+
+#Subset data for stream segments => 40
+geo_OG_18030002 <- subset(OG_18030002, iGeo_Len >= 40)
+geo_REACH_18030002 <- subset(REACH_18030002, iGeo_Len >= 40)
+geo_UNI_18030002 <- subset(UNI_18030002, iGeo_Len >= 40)
+```
+
+### Multilinear Regression Adjusted R^2 Value ##
+```{r}
+#Call the function with your data 
+#MLR_oCC_EX(df, title)
+
+MLR_oCC_EX(geo_OG_18030002, "Original BRAT")
+MLR_oCC_EX(geo_REACH_18030002, "By Reach Updated BRAT")
+MLR_oCC_EX(geo_UNI_18030002, "Universal Updated BRAT")
+```
+
+### Aggregeated R^2 Value ##
+```{r}
+#Call data to run through the categorize function
+#df <- categorize(df)
+
+geo_OG_18030002 <- categorize(geo_OG_18030002)
+geo_REACH_18030002 <- categorize(geo_REACH_18030002)
+geo_UNI_18030002 <- categorize(geo_UNI_18030002)
+
+subset_OG_18030002 <- categorize(subset_OG_18030002)
+subset_REACH_18030002 <- categorize(subset_REACH_18030002)
+subset_UNI_18030002 <- categorize(subset_UNI_18030002)
+
+
+#Call data to run through the group function
+#grouped_df <- group(df)
+
+grouped_OG_18030002 <- group(geo_OG_18030002)
+grouped_REACH_18030002 <- group(geo_REACH_18030002)
+grouped_UNI_18030002 <- group(geo_UNI_18030002)
+
+
+#Call data to run through the aggregate R^2 plot function
+#agg_r_plot(grouped_df, "plot title")
+
+agg_r_plot(grouped_OG_18030002, "Original")
+agg_r_plot(grouped_REACH_18030002, "By Reach Updates")
+agg_r_plot(grouped_UNI_18030002, "Universal Updates")
+
+```
+
+### Electivity Index
+```{r}
+#call data to run through Electivity Index Function
+#EI(df)
+
+EI(geo_OG_18030002)
+EI(geo_REACH_18030002)
+EI(geo_UNI_18030002)
+
+```
+
+### RMSE 
+```{r}
+#Call data to run through RMSE function 
+#RMSE(df, title)
+
+RMSE(geo_OG_18030002, "subset OG_18030002")
+RMSE(geo_REACH_18030002, "subset REACH_18030002")
+RMSE(geo_UNI_18030002, "subset UNI_18030002")
+
+```
+
+### Mean Absolute Error
+```{r}
+#Call data to run MAE function 
+#MAE(df, title)
+MAE(geo_OG_18030002, "subset OG_18030002")
+MAE(geo_REACH_18030002, "subset REACH_18030002")
+MAE(geo_UNI_18030002, "subset UNI_18030002")
+
+
+```
+
+
+### Confusion Matrix
+####Clean Up Data
+```{r}
+#Call function to Add Observed Categories to data
+#observed_cat(df)
+
+geo_OG_18030002 <- observed_cat(geo_OG_18030002)
+geo_REACH_18030002 <- observed_cat(geo_REACH_18030002)
+geo_UNI_18030002 <- observed_cat(geo_UNI_18030002)
+
+
+subset_OG_18030002 <- observed_cat(subset_OG_18030002)
+subset_REACH_18030002 <- observed_cat(subset_REACH_18030002)
+subset_UNI_18030002 <- observed_cat(subset_UNI_18030002)
+
+
+```
+
+#### Confusion Matrix Table and Plot
+```{r}
+# Call data to run CM function
+#CM(df, "title")
+
+CM(geo_OG_18030002, "Original")
+CM(geo_REACH_18030002, "By Reach Updates")
+CM(geo_UNI_18030002, "Universal Updates")
+
+
+CM(subset_OG_18030002, "Original (Observations Only)")
+CM(subset_REACH_18030002, "By Reach Updates (Observations Only)")
+CM(subset_UNI_18030002, "Universal Updates (Observations Only)")
+
+
+```
+
+
+
+
+#HUC 18020163######################################################################################
+##Import Data 
+```{r}
+#Import Observed VS Predicted CSVs
+
+#Original BRAT Version
+OG_18020163 <- read_csv("18020163_NoVegUpdate_Observed_Capacity.csv")
+
+#By REACH_18020163 Updated BRAT Version
+REACH_18020163 <- read_csv("18020163_ByReachUpdate_Observed_Capacity.csv")
+
+#Universal updated BRAT version
+UNI_18020163 <- read_csv("18020163_UniversalUpdate_Observed_Capacity.csv")
+
+```
+
+
+## STEP 1: JUSTIFY CHANGES AND MODEL UPDATES ####################################################
+### Multilinear Regression for Observed Beaver Capacity 
+```{r}
+#Significant Variables in the BRAT Attribute Table
+
+#Multilinear Regression for Observed Beaver Capacity on all segments 
+MLR_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA ,
+  data = OG_18020163)
+
+summary(MLR_Observed)
+
+#Subset for only segments with observed capacity
+Non_Zero_OG_18020163 <- subset(OG_18020163, DamKM != 0)
+
+#Multilinear Regression for Observed Beaver Capacity on segments with observed capacity
+MLR_subsetted_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA ,
+  data = Non_Zero_OG_18020163)
+
+summary(MLR_subsetted_Observed)
+
+```
+
+
+## STEP 2: RUN STATISTICS FOR COMPARISON ########################################################
+###Clean Up Data
+```{r}
+#Subset data for segments with observed capacity and stream segments => 40
+subset_OG_18020163 <- subset(OG_18020163, DamKM != 0 & iGeo_Len >= 40)
+subset_REACH_18020163 <- subset(REACH_18020163, DamKM != 0 & iGeo_Len >= 40)
+subset_UNI_18020163 <- subset(UNI_18020163, DamKM != 0 & iGeo_Len >= 40)
+
+#Subset data for stream segments => 40
+geo_OG_18020163 <- subset(OG_18020163, iGeo_Len >= 40)
+geo_REACH_18020163 <- subset(REACH_18020163, iGeo_Len >= 40)
+geo_UNI_18020163 <- subset(UNI_18020163, iGeo_Len >= 40)
+```
+
+### Multilinear Regression Adjusted R^2 Value ##
+```{r}
+#Call the function with your data 
+#MLR_oCC_EX(df, title)
+
+MLR_oCC_EX(geo_OG_18020163, "Original BRAT")
+MLR_oCC_EX(geo_REACH_18020163, "By Reach Updated BRAT")
+MLR_oCC_EX(geo_UNI_18020163, "Universal Updated BRAT")
+```
+
+### Aggregeated R^2 Value ##
+```{r}
+#Call data to run through the categorize function
+#df <- categorize(df)
+
+geo_OG_18020163 <- categorize(geo_OG_18020163)
+geo_REACH_18020163 <- categorize(geo_REACH_18020163)
+geo_UNI_18020163 <- categorize(geo_UNI_18020163)
+
+subset_OG_18020163 <- categorize(subset_OG_18020163)
+subset_REACH_18020163 <- categorize(subset_REACH_18020163)
+subset_UNI_18020163 <- categorize(subset_UNI_18020163)
+
+
+#Call data to run through the group function
+#grouped_df <- group(df)
+
+grouped_OG_18020163 <- group(geo_OG_18020163)
+grouped_REACH_18020163 <- group(geo_REACH_18020163)
+grouped_UNI_18020163 <- group(geo_UNI_18020163)
+
+
+#Call data to run through the aggregate R^2 plot function
+#agg_r_plot(grouped_df, "plot title")
+
+agg_r_plot(grouped_OG_18020163, "Original")
+agg_r_plot(grouped_REACH_18020163, "By Reach Updates")
+agg_r_plot(grouped_UNI_18020163, "Universal Updates")
+
+```
+
+### Electivity Index
+```{r}
+#call data to run through Electivity Index Function
+#EI(df)
+
+EI(geo_OG_18020163)
+EI(geo_REACH_18020163)
+EI(geo_UNI_18020163)
+
+```
+
+### RMSE 
+```{r}
+#Call data to run through RMSE function 
+#RMSE(df, title)
+
+RMSE(geo_OG_18020163, "subset OG_18020163")
+RMSE(geo_REACH_18020163, "subset REACH_18020163")
+RMSE(geo_UNI_18020163, "subset UNI_18020163")
+
+```
+
+### Mean Absolute Error
+```{r}
+#Call data to run MAE function 
+#MAE(df, title)
+MAE(geo_OG_18020163, "subset OG_18020163")
+MAE(geo_REACH_18020163, "subset REACH_18020163")
+MAE(geo_UNI_18020163, "subset UNI_18020163")
+
+
+```
+
+
+### Confusion Matrix
+####Clean Up Data
+```{r}
+#Call function to Add Observed Categories to data
+#observed_cat(df)
+
+geo_OG_18020163 <- observed_cat(geo_OG_18020163)
+geo_REACH_18020163 <- observed_cat(geo_REACH_18020163)
+geo_UNI_18020163 <- observed_cat(geo_UNI_18020163)
+
+
+subset_OG_18020163 <- observed_cat(subset_OG_18020163)
+subset_REACH_18020163 <- observed_cat(subset_REACH_18020163)
+subset_UNI_18020163 <- observed_cat(subset_UNI_18020163)
+
+
+```
+
+#### Confusion Matrix Table and Plot
+```{r}
+# Call data to run CM function
+#CM(df, "title")
+
+CM(geo_OG_18020163, "Original")
+CM(geo_REACH_18020163, "By Reach Updates")
+CM(geo_UNI_18020163, "Universal Updates")
+
+
+CM(subset_OG_18020163, "Original (Observations Only)")
+CM(subset_REACH_18020163, "By Reach Updates (Observations Only)")
+CM(subset_UNI_18020163, "Universal Updates (Observations Only)")
+
+
+```
+
+
+
+#HUC 18020123######################################################################################
+##Import Data 
+```{r}
+#Import Observed VS Predicted CSVs
+
+#Original BRAT Version
+OG_18020123 <- read_csv("18020123_NoVegUpdate_Observed_Capacity.csv")
+
+#By REACH_18020123 Updated BRAT Version
+REACH_18020123 <- read_csv("18020123_ByReachUpdate_Observed_Capacity.csv")
+
+#Universal updated BRAT version
+UNI_18020123 <- read_csv("18020123_UniversalUpdate_Observed_Capacity.csv")
+
+```
+
+
+## STEP 1: JUSTIFY CHANGES AND MODEL UPDATES ####################################################
+### Multilinear Regression for Observed Beaver Capacity 
+```{r}
+#Significant Variables in the BRAT Attribute Table
+
+#Multilinear Regression for Observed Beaver Capacity on all segments 
+MLR_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA ,
+  data = OG_18020123)
+
+summary(MLR_Observed)
+
+#Subset for only segments with observed capacity
+Non_Zero_OG_18020123 <- subset(OG_18020123, DamKM != 0)
+
+#Multilinear Regression for Observed Beaver Capacity on segments with observed capacity
+MLR_subsetted_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA ,
+  data = Non_Zero_OG_18020123)
+
+summary(MLR_subsetted_Observed)
+
+```
+
+
+## STEP 2: RUN STATISTICS FOR COMPARISON ########################################################
+###Clean Up Data
+```{r}
+#Subset data for segments with observed capacity and stream segments => 40
+subset_OG_18020123 <- subset(OG_18020123, DamKM != 0 & iGeo_Len >= 40)
+subset_REACH_18020123 <- subset(REACH_18020123, DamKM != 0 & iGeo_Len >= 40)
+subset_UNI_18020123 <- subset(UNI_18020123, DamKM != 0 & iGeo_Len >= 40)
+
+#Subset data for stream segments => 40
+geo_OG_18020123 <- subset(OG_18020123, iGeo_Len >= 40)
+geo_REACH_18020123 <- subset(REACH_18020123, iGeo_Len >= 40)
+geo_UNI_18020123 <- subset(UNI_18020123, iGeo_Len >= 40)
+```
+
+### Multilinear Regression Adjusted R^2 Value ##
+```{r}
+#Call the function with your data 
+#MLR_oCC_EX(df, title)
+
+MLR_oCC_EX(geo_OG_18020123, "Original BRAT")
+MLR_oCC_EX(geo_REACH_18020123, "By Reach Updated BRAT")
+MLR_oCC_EX(geo_UNI_18020123, "Universal Updated BRAT")
+```
+
+### Aggregeated R^2 Value ##
+```{r}
+#Call data to run through the categorize function
+#df <- categorize(df)
+
+geo_OG_18020123 <- categorize(geo_OG_18020123)
+geo_REACH_18020123 <- categorize(geo_REACH_18020123)
+geo_UNI_18020123 <- categorize(geo_UNI_18020123)
+
+subset_OG_18020123 <- categorize(subset_OG_18020123)
+subset_REACH_18020123 <- categorize(subset_REACH_18020123)
+subset_UNI_18020123 <- categorize(subset_UNI_18020123)
+
+
+#Call data to run through the group function
+#grouped_df <- group(df)
+
+grouped_OG_18020123 <- group(geo_OG_18020123)
+grouped_REACH_18020123 <- group(geo_REACH_18020123)
+grouped_UNI_18020123 <- group(geo_UNI_18020123)
+
+
+#Call data to run through the aggregate R^2 plot function
+#agg_r_plot(grouped_df, "plot title")
+
+agg_r_plot(grouped_OG_18020123, "Original")
+agg_r_plot(grouped_REACH_18020123, "By Reach Updates")
+agg_r_plot(grouped_UNI_18020123, "Universal Updates")
+
+```
+
+### Electivity Index
+```{r}
+#call data to run through Electivity Index Function
+#EI(df)
+
+EI(geo_OG_18020123)
+EI(geo_REACH_18020123)
+EI(geo_UNI_18020123)
+
+```
+
+### RMSE 
+```{r}
+#Call data to run through RMSE function 
+#RMSE(df, title)
+
+RMSE(geo_OG_18020123, "subset OG_18020123")
+RMSE(geo_REACH_18020123, "subset REACH_18020123")
+RMSE(geo_UNI_18020123, "subset UNI_18020123")
+
+```
+
+### Mean Absolute Error
+```{r}
+#Call data to run MAE function 
+#MAE(df, title)
+MAE(geo_OG_18020123, "subset OG_18020123")
+MAE(geo_REACH_18020123, "subset REACH_18020123")
+MAE(geo_UNI_18020123, "subset UNI_18020123")
+
+
+```
+
+
+### Confusion Matrix
+####Clean Up Data
+```{r}
+#Call function to Add Observed Categories to data
+#observed_cat(df)
+
+geo_OG_18020123 <- observed_cat(geo_OG_18020123)
+geo_REACH_18020123 <- observed_cat(geo_REACH_18020123)
+geo_UNI_18020123 <- observed_cat(geo_UNI_18020123)
+
+
+subset_OG_18020123 <- observed_cat(subset_OG_18020123)
+subset_REACH_18020123 <- observed_cat(subset_REACH_18020123)
+subset_UNI_18020123 <- observed_cat(subset_UNI_18020123)
+
+
+```
+
+#### Confusion Matrix Table and Plot
+```{r}
+# Call data to run CM function
+#CM(df, "title")
+
+CM(geo_OG_18020123, "Original")
+CM(geo_REACH_18020123, "By Reach Updates")
+CM(geo_UNI_18020123, "Universal Updates")
+
+
+CM(subset_OG_18020123, "Original (Observations Only)")
+CM(subset_REACH_18020123, "By Reach Updates (Observations Only)")
+CM(subset_UNI_18020123, "Universal Updates (Observations Only)")
+
+
+```
+
+
+
+
+#HUC 18020002######################################################################################
+##Import Data 
+```{r}
+#Import Observed VS Predicted CSVs
+
+#Original BRAT Version
+OG_18020002 <- read_csv("18020002_NoVegUpdate_Observed_Capacity.csv")
+
+#By REACH_18020002 Updated BRAT Version
+REACH_18020002 <- read_csv("18020002_ByReachUpdate_Observed_Capacity.csv")
+
+#Universal updated BRAT version
+UNI_18020002 <- read_csv("18020002_UniversalUpdate_Observed_Capacity.csv")
+
+```
+
+
+## STEP 1: JUSTIFY CHANGES AND MODEL UPDATES ####################################################
+### Multilinear Regression for Observed Beaver Capacity 
+```{r}
+#Significant Variables in the BRAT Attribute Table
+
+#Multilinear Regression for Observed Beaver Capacity on all segments 
+MLR_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA ,
+  data = OG_18020002)
+
+summary(MLR_Observed)
+
+#Subset for only segments with observed capacity
+Non_Zero_OG_18020002 <- subset(OG_18020002, DamKM != 0)
+
+#Multilinear Regression for Observed Beaver Capacity on segments with observed capacity
+MLR_subsetted_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA ,
+  data = Non_Zero_OG_18020002)
+
+summary(MLR_subsetted_Observed)
+
+```
+
+
+## STEP 2: RUN STATISTICS FOR COMPARISON ########################################################
+###Clean Up Data
+```{r}
+#Subset data for segments with observed capacity and stream segments => 40
+subset_OG_18020002 <- subset(OG_18020002, DamKM != 0 & iGeo_Len >= 40)
+subset_REACH_18020002 <- subset(REACH_18020002, DamKM != 0 & iGeo_Len >= 40)
+subset_UNI_18020002 <- subset(UNI_18020002, DamKM != 0 & iGeo_Len >= 40)
+
+#Subset data for stream segments => 40
+geo_OG_18020002 <- subset(OG_18020002, iGeo_Len >= 40)
+geo_REACH_18020002 <- subset(REACH_18020002, iGeo_Len >= 40)
+geo_UNI_18020002 <- subset(UNI_18020002, iGeo_Len >= 40)
+```
+
+### Multilinear Regression Adjusted R^2 Value ##
+```{r}
+#Call the function with your data 
+#MLR_oCC_EX(df, title)
+
+MLR_oCC_EX(geo_OG_18020002, "Original BRAT")
+MLR_oCC_EX(geo_REACH_18020002, "By Reach Updated BRAT")
+MLR_oCC_EX(geo_UNI_18020002, "Universal Updated BRAT")
+```
+
+### Aggregeated R^2 Value ##
+```{r}
+#Call data to run through the categorize function
+#df <- categorize(df)
+
+geo_OG_18020002 <- categorize(geo_OG_18020002)
+geo_REACH_18020002 <- categorize(geo_REACH_18020002)
+geo_UNI_18020002 <- categorize(geo_UNI_18020002)
+
+subset_OG_18020002 <- categorize(subset_OG_18020002)
+subset_REACH_18020002 <- categorize(subset_REACH_18020002)
+subset_UNI_18020002 <- categorize(subset_UNI_18020002)
+
+
+#Call data to run through the group function
+#grouped_df <- group(df)
+
+grouped_OG_18020002 <- group(geo_OG_18020002)
+grouped_REACH_18020002 <- group(geo_REACH_18020002)
+grouped_UNI_18020002 <- group(geo_UNI_18020002)
+
+
+#Call data to run through the aggregate R^2 plot function
+#agg_r_plot(grouped_df, "plot title")
+
+agg_r_plot(grouped_OG_18020002, "Original")
+agg_r_plot(grouped_REACH_18020002, "By Reach Updates")
+agg_r_plot(grouped_UNI_18020002, "Universal Updates")
+
+```
+
+### Electivity Index
+```{r}
+#call data to run through Electivity Index Function
+#EI(df)
+
+EI(geo_OG_18020002)
+EI(geo_REACH_18020002)
+EI(geo_UNI_18020002)
+
+```
+
+### RMSE 
+```{r}
+#Call data to run through RMSE function 
+#RMSE(df, title)
+
+RMSE(geo_OG_18020002, "subset OG_18020002")
+RMSE(geo_REACH_18020002, "subset REACH_18020002")
+RMSE(geo_UNI_18020002, "subset UNI_18020002")
+
+```
+
+### Mean Absolute Error
+```{r}
+#Call data to run MAE function 
+#MAE(df, title)
+MAE(geo_OG_18020002, "subset OG_18020002")
+MAE(geo_REACH_18020002, "subset REACH_18020002")
+MAE(geo_UNI_18020002, "subset UNI_18020002")
+
+
+```
+
+
+### Confusion Matrix
+####Clean Up Data
+```{r}
+#Call function to Add Observed Categories to data
+#observed_cat(df)
+
+geo_OG_18020002 <- observed_cat(geo_OG_18020002)
+geo_REACH_18020002 <- observed_cat(geo_REACH_18020002)
+geo_UNI_18020002 <- observed_cat(geo_UNI_18020002)
+
+
+subset_OG_18020002 <- observed_cat(subset_OG_18020002)
+subset_REACH_18020002 <- observed_cat(subset_REACH_18020002)
+subset_UNI_18020002 <- observed_cat(subset_UNI_18020002)
+
+
+```
+
+#### Confusion Matrix Table and Plot
+```{r}
+# Call data to run CM function
+#CM(df, "title")
+
+CM(geo_OG_18020002, "Original")
+CM(geo_REACH_18020002, "By Reach Updates")
+CM(geo_UNI_18020002, "Universal Updates")
+
+
+CM(subset_OG_18020002, "Original (Observations Only)")
+CM(subset_REACH_18020002, "By Reach Updates (Observations Only)")
+CM(subset_UNI_18020002, "Universal Updates (Observations Only)")
+
+
+```
+
+
+
+
+
+
+
+
