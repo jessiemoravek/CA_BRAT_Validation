@@ -37,6 +37,7 @@ REACH <- read_csv("18090208_ByReachUpdate_Observed_Capacity.csv")
 #Universal updated BRAT version
 UNI <- read_csv("18090208_UniversalUpdate_Observed_Capacity.csv")
 
+sum(OG$DamKM>0)
 
 ```
 
@@ -444,6 +445,7 @@ REACH_18090101 <- read_csv("18090101_ByReachUpdate_Observed_Capacity.csv")
 #Universal updated BRAT version
 UNI_18090101 <- read_csv("18090101_UniversalUpdate_Observed_Capacity.csv")
 
+sum(OG_18090101$DamKM>0)
 ```
 
 
@@ -608,6 +610,8 @@ REACH_18070302 <- read_csv("18070302_ByReachUpdate_Observed_Capacity.csv")
 
 #Universal updated BRAT version
 UNI_18070302 <- read_csv("18070302_UniversalUpdate_Observed_Capacity.csv")
+
+sum(OG_18070302$DamKM>0)
 
 ```
 
@@ -777,6 +781,8 @@ REACH_18060005 <- read_csv("18060005_ByReachUpdate_Observed_Capacity.csv")
 #Universal updated BRAT version
 UNI_18060005 <- read_csv("18060005_UniversalUpdate_Observed_Capacity.csv")
 
+sum(OG_18060005$DamKM>0)
+
 ```
 
 
@@ -943,6 +949,7 @@ REACH_18050002 <- read_csv("18050002_ByReachUpdate_Observed_Capacity.csv")
 #Universal updated BRAT version
 UNI_18050002 <- read_csv("18050002_UniversalUpdate_Observed_Capacity.csv")
 
+sum(OG_18050002$DamKM>0)
 ```
 
 
@@ -1107,6 +1114,8 @@ REACH_18030002 <- read_csv("18030002_ByReachUpdate_Observed_Capacity.csv")
 
 #Universal updated BRAT version
 UNI_18030002 <- read_csv("18030002_UniversalUpdate_Observed_Capacity.csv")
+
+sum(OG_18030002$DamKM>0)
 
 ```
 
@@ -1275,6 +1284,8 @@ REACH_18020163 <- read_csv("18020163_ByReachUpdate_Observed_Capacity.csv")
 #Universal updated BRAT version
 UNI_18020163 <- read_csv("18020163_UniversalUpdate_Observed_Capacity.csv")
 
+sum(OG_18020163$DamKM>0)
+
 ```
 
 
@@ -1440,6 +1451,9 @@ REACH_18020123 <- read_csv("18020123_ByReachUpdate_Observed_Capacity.csv")
 
 #Universal updated BRAT version
 UNI_18020123 <- read_csv("18020123_UniversalUpdate_Observed_Capacity.csv")
+
+sum(OG_18020123$DamKM>0)
+
 
 ```
 
@@ -1607,6 +1621,8 @@ REACH_18020002 <- read_csv("18020002_ByReachUpdate_Observed_Capacity.csv")
 
 #Universal updated BRAT version
 UNI_18020002 <- read_csv("18020002_UniversalUpdate_Observed_Capacity.csv")
+
+sum(OG_18020002$DamKM>0)
 
 ```
 
