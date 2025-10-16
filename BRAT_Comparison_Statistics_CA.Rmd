@@ -428,7 +428,19 @@ CM(subset_UNI, "Universal Updates (Observations Only)")
 
 
 ```
+##Dam Year Distribution
+```{r}
+range(subset_OG$Year)
+hist(subset_OG$Year)
+median(subset_OG$Year)
 
+mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+mode(subset_OG$Year)
+```
 
 
 #HUC 18090101######################################################################################
@@ -447,6 +459,9 @@ UNI_18090101 <- read_csv("18090101_UniversalUpdate_Observed_Capacity.csv")
 
 sum(OG_18090101$DamKM>0)
 ```
+
+
+
 
 
 ## STEP 1: JUSTIFY CHANGES AND MODEL UPDATES ####################################################
@@ -596,6 +611,14 @@ CM(subset_UNI_18090101, "Universal Updates (Observations Only)")
 
 ```
 
+##Dam Year Distribution
+```{r}
+range(subset_OG_18090101$Year)
+hist(subset_OG_18090101$Year)
+median(subset_OG_18090101$Year)
+mode(subset_OG_18090101$Year)
+
+```
 
 #HUC 18070302######################################################################################
 ##Import Data 
@@ -764,7 +787,14 @@ CM(subset_UNI_18070302, "Universal Updates (Observations Only)")
 ```
 
 
+##Dam Year Distribution
+```{r}
+range(subset_OG_18070302$Year)
+hist(subset_OG_18070302$Year)
+median(subset_OG_18070302$Year)
+mode(subset_OG_18070302$Year)
 
+```
 
 
 #HUC 18060005######################################################################################
@@ -930,6 +960,15 @@ CM(subset_OG_18060005, "Original (Observations Only)")
 CM(subset_REACH_18060005, "By Reach Updates (Observations Only)")
 CM(subset_UNI_18060005, "Universal Updates (Observations Only)")
 
+
+```
+
+##Dam Year Distribution
+```{r}
+range(subset_OG_18060005$Year)
+hist(subset_OG_18060005$Year)
+median(subset_OG_18060005$Year)
+mode(subset_OG_18060005$Year)
 
 ```
 
@@ -1099,6 +1138,15 @@ CM(subset_UNI_18050002, "Universal Updates (Observations Only)")
 
 
 ```
+##Dam Year Distribution
+```{r}
+range(subset_OG_18050002$Year)
+hist(subset_OG_18050002$Year)
+median(subset_OG_18050002$Year)
+mode(subset_OG_18050002$Year)
+
+```
+
 
 
 #HUC 18030002######################################################################################
@@ -1266,7 +1314,14 @@ CM(subset_UNI_18030002, "Universal Updates (Observations Only)")
 
 
 ```
+##Dam Year Distribution
+```{r}
+range(subset_OG_18030002$Year)
+hist(subset_OG_18030002$Year)
+median(subset_OG_18030002$Year)
+mode(subset_OG_18030002$Year)
 
+```
 
 
 
@@ -1435,6 +1490,15 @@ CM(subset_UNI_18020163, "Universal Updates (Observations Only)")
 
 
 ```
+##Dam Year Distribution
+```{r}
+range(subset_OG_18020163$Year)
+hist(subset_OG_18020163$Year)
+median(subset_OG_18020163$Year)
+mode(subset_OG_18020163$Year)
+
+```
+
 
 
 
@@ -1604,7 +1668,14 @@ CM(subset_UNI_18020123, "Universal Updates (Observations Only)")
 
 
 ```
+##Dam Year Distribution
+```{r}
+range(subset_OG_18020123$Year)
+hist(subset_OG_18020123$Year)
+median(subset_OG_18020123$Year)
+mode(subset_OG_18020123$Year)
 
+```
 
 
 
@@ -1774,7 +1845,14 @@ CM(subset_UNI_18020002, "Universal Updates (Observations Only)")
 
 ```
 
+##Dam Year Distribution
+```{r}
+range(subset_OG_18020002$Year)
+hist(subset_OG_18020002$Year)
+median(subset_OG_18020002$Year)
+mode(subset_OG_18020002$Year)
 
+```
 
 
 

@@ -1,0 +1,498 @@
+---
+title: "CA_VegCodes"
+output: html_document
+date: "2025-10-16"
+---
+
+
+#Import Libraries
+```{r include=FALSE}
+
+library(tidyverse)
+library(ggplot2)
+library(yardstick)
+library(dplyr)
+library(Metrics)
+library(caret)
+library(ggpmisc)
+library(sf)
+library(RSQLite)
+library(DBI)
+library(dplyr)
+library(purrr)
+```
+
+#Entire US Landfire Directory (LF 2023)
+```{r}
+# Connect to the geopackage
+con <- dbConnect(SQLite(),dbname = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18020002/No_VegCode_Updates/Beaver_Restoration_Assessment_Tool_BRAT_-_Riverscape_Network-BRAT_for_Big_Sage_Reservoir-Rattlesnake_Creek/outputs/brat.gpkg")
+
+
+# List tables
+dbListTables(con)
+
+# Read a specific table
+tbl_data <- dbReadTable(con, "VegetationTypes")
+
+
+# Disconnect when done
+dbDisconnect(con)
+
+write.csv(tbl_data, "Landfire_Directory_2023.csv", row.names = TRUE)
+
+```
+
+
+#Function to read tables from Geopackages and combine 
+```{r}
+#' Combine the same table from multiple GeoPackages (via RSQLite)
+#' and keep only unique rows based on selected columns
+#'
+#' @param base_dirs Character vector of directories to search
+#' @param table_name Name of the table to read from each GeoPackage
+#' @param unique_by Character vector of column names to determine uniqueness
+#' @param filter_column Name of the column to apply the filter to (optional)
+#' @param filter_pattern Regular expression pattern; rows matching this pattern
+#'        in `filter_column` will be removed (optional)
+#' @param recursive Logical; search subdirectories recursively (default: TRUE)
+#' @param quiet Logical; suppress progress messages
+#'
+#' @return A data.frame combining all rows from the table across GeoPackages,
+#'         filtered and deduplicated.
+#'
+#' @examples
+#' all_roads_clean <- combine_gpkg_tables_filtered(
+#'   base_dirs = c("data/region1", "data/region2"),
+#'   table_name = "roads",
+#'   unique_by = c("road_id"),
+#'   filter_column = "road_name",
+#'   filter_pattern = "TEMP|TEST"   # remove rows where road_name has these
+#' )
+
+
+
+
+combine_gpkg_tables_filtered <- function(base_dirs,
+                                         table_name,
+                                         unique_by,
+                                         filter_column = NULL,
+                                         filter_pattern = NULL,
+                                         recursive = TRUE,
+                                         quiet = TRUE) {
+  # Validate inputs
+  if (missing(unique_by) || length(unique_by) == 0) {
+    stop("You must provide one or more column names in 'unique_by'.")
+  }
+  
+  # Find all GeoPackages
+  gpkg_files <- unlist(lapply(base_dirs, function(d) {
+    list.files(d, pattern = "\\.gpkg$", full.names = TRUE, recursive = recursive)
+  }))
+  
+  if (length(gpkg_files) == 0) {
+    stop("No GeoPackage (.gpkg) files found in the specified directories.")
+  }
+  
+  if (!quiet) message("Found ", length(gpkg_files), " GeoPackage files.")
+  
+  # Helper: safely read one GeoPackage table
+  read_gpkg_table <- function(gpkg_path, table_name) {
+    con <- dbConnect(RSQLite::SQLite(), gpkg_path)
+    on.exit(dbDisconnect(con), add = TRUE)
+    
+    if (!(table_name %in% dbListTables(con))) {
+      if (!quiet) message("Skipping ", basename(gpkg_path), " — table not found.")
+      return(NULL)
+    }
+    
+    df <- tryCatch(
+      dbReadTable(con, table_name),
+      error = function(e) {
+        if (!quiet) message("Error reading ", basename(gpkg_path), ": ", e$message)
+        return(NULL)
+      }
+    )
+    
+    if (!quiet && !is.null(df)) {
+      message("Read ", nrow(df), " rows from ", basename(gpkg_path))
+    }
+    
+    df
+  }
+  
+  # Read from all GeoPackages
+  data_list <- purrr::map(gpkg_files, ~read_gpkg_table(.x, table_name))
+  data_list <- purrr::compact(data_list)
+  
+  if (length(data_list) == 0) {
+    warning("No valid data found in any GeoPackage.")
+    return(data.frame())
+  }
+  
+  # Keep only common columns
+  common_cols <- Reduce(intersect, lapply(data_list, names))
+  data_list <- lapply(data_list, function(df) df[, common_cols, drop = FALSE])
+  
+  # Combine all
+  combined <- bind_rows(data_list)
+  
+  # Check columns for uniqueness
+  missing_cols <- setdiff(unique_by, names(combined))
+  if (length(missing_cols) > 0) {
+    stop("These columns specified in 'unique_by' are missing: ",
+         paste(missing_cols, collapse = ", "))
+  }
+  
+  # Optional filtering step
+  if (!is.null(filter_column) && !is.null(filter_pattern)) {
+    if (!(filter_column %in% names(combined))) {
+      stop("The specified 'filter_column' does not exist in the data: ", filter_column)
+    }
+    
+    before_n <- nrow(combined)
+    combined <- combined %>%
+      filter(!str_detect(!!sym(filter_column), filter_pattern))
+    after_n <- nrow(combined)
+    
+    if (!quiet) {
+      message("Filtered out ", before_n - after_n,
+              " rows where '", filter_column,
+              "' matched pattern '", filter_pattern, "'.")
+    }
+  }
+  
+  # Keep only unique rows based on selected columns
+  combined_unique <- combined %>%
+    distinct(across(all_of(unique_by)), .keep_all = TRUE)
+  
+  if (!quiet) {
+    message("Final dataset has ", nrow(combined_unique),
+            " unique rows (based on ", paste(unique_by, collapse = ", "), ").")
+  }
+  
+  return(combined_unique)
+}
+
+```
+
+#18020002
+```{r}
+VegTable_18020002_No_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18020002/No_VegCode_Updates",
+  table_name = "mVegetationTypes",
+  unique_by = c("VegetationID"),
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18020002_ByReach_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18020002/ByReach_VegCode_Updates",
+  table_name = "VegetationTypes",
+  unique_by = c("VegetationID"),
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18020002_Universal_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18020002/Universal_VegCode_Updates",
+  table_name = "VegetationTypes",
+  unique_by = c("VegetationID"),
+  recursive = TRUE,
+  quiet = FALSE
+)
+```
+##why the fuck are there more categories in the universal version
+
+```{r}
+unique_vals_df1 <- unique(VegTable_18020002_No_VegCode_Updates$VegetationID)
+unique_vals_df2 <- unique(VegTable_18020002_Universal_VegCode_Updates$VegetationID)
+
+# Values only in df1
+only_in_df1 <- setdiff(unique_vals_df1, unique_vals_df2)
+
+# Values only in df2
+only_in_df2 <- setdiff(unique_vals_df2, unique_vals_df1)
+
+# Values in both
+in_both <- intersect(unique_vals_df1, unique_vals_df2)
+
+VegTable_18020002_Universal_VegCode_Updates %>% filter(VegetationID == 7968 | VegetationID == 7920)
+
+#added to universal version for no reason???
+#7968	9	Western Cool Temperate Wheat
+#7920	9	Western Cool Temperate Developed Ruderal Deciduous Forest
+```
+#18020123
+```{r}
+VegTable_18020123_No_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18020123/No_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18020123_ByReach_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18020123/ByReach_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18020123_Universal_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18020123/Universal_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+```
+
+
+#18020163
+```{r}
+VegTable_18020163_No_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18020163/No_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18020163_ByReach_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18020163/ByReach_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18020163_Universal_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18020163/Universal_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+```
+
+
+#18030002
+```{r}
+VegTable_18030002_No_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18030002/No_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18030002_ByReach_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18030002/ByReach_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18030002_Universal_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18030002/Universal_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+```
+
+
+#18050002
+```{r}
+VegTable_18050002_No_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18050002/No_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18050002_ByReach_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18050002/ByReach_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18050002_Universal_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18050002/Universal_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+```
+
+
+#18060005
+```{r}
+VegTable_18060005_No_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18060005/No_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18060005_ByReach_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18060005/ByReach_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18060005_Universal_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18060005/Universal_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+```
+
+
+#18070302
+```{r}
+VegTable_18070302_No_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18070302/No_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18070302_ByReach_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18070302/ByReach_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18070302_Universal_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18070302/Universal_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+```
+
+
+#18090101
+```{r}
+VegTable_18090101_No_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18090101/No_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18090101_ByReach_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18090101/ByReach_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18090101_Universal_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18090101/Universal_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+```
+
+
+#18090208
+```{r}
+VegTable_18090208_No_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18090208/No_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18090208_ByReach_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18090208/ByReach_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+
+VegTable_18090208_Universal_VegCode_Updates <- combine_gpkg_tables_filtered(
+  base_dirs = "C:/Users/morav042/Documents/ArcGIS/CA_BRAT_Validation/18090208/Universal_VegCode_Updates",
+  table_name = "vwReachVegetationTypes",
+  unique_by = c("VegetationID"),
+  filter_column = "Epoch",
+  filter_pattern = "BPS",
+  recursive = TRUE,
+  quiet = FALSE
+)
+```
+
+
+
+
