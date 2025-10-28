@@ -425,7 +425,7 @@ mode(subset_OG$Year)
 #Import Observed VS Predicted CSVs
 
 #Original BRAT Version
-OG_18020002 <- read_csv("18090101_NoVegUpdate_Observed_Capacity.csv")
+OG_18090101 <- read_csv("18090101_NoVegUpdate_Observed_Capacity.csv")
 
 #By REACH_18090101 Updated BRAT Version
 REACH_18090101 <- read_csv("18090101_ByReachUpdate_Observed_Capacity.csv")
@@ -1640,3 +1640,136 @@ mode(subset_OG_18020002$Year)
 ```
 
 
+#ALL HUCS
+##Import Data
+```{r}
+OG <- select(OG, -ReachLen)
+All_OG <- rbind(OG, OG_18020002, OG_18020123, OG_18020163, OG_18030002, OG_18050002, OG_18060005, OG_18070302, OG_18090101)
+
+All_REACH <- rbind(REACH, REACH_18020002, REACH_18020123, REACH_18020163, REACH_18030002, REACH_18050002, REACH_18060005, OG_18070302, OG_18090101)
+
+All_UNI <- rbind(UNI, UNI_18020002, UNI_18020123, UNI_18020163, UNI_18030002, UNI_18050002, UNI_18060005, UNI_18070302, UNI_18090101)
+```
+
+## STEP 1: JUSTIFY CHANGES AND MODEL UPDATES ####################################################
+### Multilinear Regression for Observed Beaver Capacity 
+```{r}
+#Significant Variables in the BRAT Attribute Table
+
+#Subset for only segments with observed capacity
+Non_Zero_All_OG <- subset(All_OG, DamKM != 0)
+
+#Multilinear Regression for Observed Beaver Capacity on segments with observed capacity
+MLR_subsetted_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA ,
+  data = Non_Zero_All_OG)
+
+summary(MLR_subsetted_Observed)
+
+```
+
+
+## STEP 2: RUN STATISTICS FOR COMPARISON ########################################################
+###Clean Up Data
+```{r}
+#Subset data for segments with observed capacity and stream segments => 40
+subset_All_OG <- subset(OG_18020002, DamKM != 0 & iGeo_Len >= 299)
+subset_All_REACH <- subset(All_REACH, DamKM != 0 & iGeo_Len >= 299)
+subset_All_UNI <- subset(All_UNI, DamKM != 0 & iGeo_Len >= 299)
+
+```
+
+### Multilinear Regression Adjusted R^2 Value ##
+```{r}
+#Call the function with your data 
+#MLR_oCC_EX(df, title)
+
+MLR_oCC_EX(subset_All_OG, "Original BRAT")
+MLR_oCC_EX(subset_All_REACH, "By Reach Updated BRAT")
+MLR_oCC_EX(subset_All_UNI, "Universal Updated BRAT")
+```
+
+### Aggregeated R^2 Value ##
+```{r}
+#Call data to run through the categorize function
+#df <- categorize(df)
+
+subset_All_OG <- categorize(subset_All_OG)
+subset_All_REACH <- categorize(subset_All_REACH)
+subset_All_UNI <- categorize(subset_All_UNI)
+
+
+#Call data to run through the group function
+#grouped_df <- group(df)
+
+grouped_All_OG <- group(subset_All_OG)
+grouped_All_REACH <- group(subset_All_REACH)
+grouped_All_UNI <- group(subset_All_UNI)
+
+
+#Call data to run through the aggregate R^2 plot function
+#agg_r_plot(grouped_df, "plot title")
+
+agg_r_plot(grouped_All_OG, "Original")
+agg_r_plot(grouped_All_REACH, "By Reach Updates")
+agg_r_plot(grouped_All_UNI, "Universal Updates")
+
+```
+
+### Electivity Index
+```{r}
+#call data to run through Electivity Index Function
+#EI(df)
+
+EI(subset_All_OG)
+EI(subset_All_REACH)
+EI(subset_All_UNI)
+
+```
+
+### RMSE 
+```{r}
+#Call data to run through RMSE function 
+#RMSE(df, title)
+
+RMSE(subset_All_OG, "subset subset_All_OG")
+RMSE(subset_All_REACH, "subset subset_All_REACH")
+RMSE(subset_All_UNI, "subset subset_All_UNI")
+
+```
+
+### Mean Absolute Error
+```{r}
+#Call data to run MAE function 
+#MAE(df, title)
+MAE(subset_All_OG, "subset_All_OG")
+MAE(subset_All_REACH, "subset_All_REACH")
+MAE(subset_All_UNI, "subset_All_UNI")
+
+
+```
+
+
+### Confusion Matrix
+####Clean Up Data
+```{r}
+#Call function to Add Observed Categories to data
+#observed_cat(df)
+
+subset_All_OG <- observed_cat(subset_All_OG)
+subset_All_REACH <- observed_cat(subset_All_REACH)
+subset_All_UNI <- observed_cat(subset_All_UNI)
+
+
+```
+
+#### Confusion Matrix Table and Plot
+```{r}
+# Call data to run CM function
+#CM(df, "title")
+
+CM(subset_All_OG, "Original (Observations Only)")
+CM(subset_All_REACH, "By Reach Updates (Observations Only)")
+CM(subset_All_UNI, "Universal Updates (Observations Only)")
+
+
+```
