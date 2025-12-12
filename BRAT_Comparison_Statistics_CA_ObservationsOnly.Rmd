@@ -89,6 +89,21 @@ subset_UNI <- subset(UNI, DamKM != 0 & iGeo_Len >= 40)
 
 ```
 
+## Summary for Table XX
+```{r}
+Non_Zero_OG <- subset(OG, DamKM != 0)
+nrow(Non_Zero_OG)
+nrow(OG)
+pctDams <- nrow(Non_Zero_OG)/nrow(OG)
+pctDams
+subset_OG <- subset(OG, DamKM != 0 & iGeo_Len >= 40)
+nrow(subset_OG)
+mean(subset_OG$iGeo_Len)
+sum(OG$Join_Count)
+#join count in entire watershed = 98
+```
+
+
 ### Multilinear Regression Adjusted R^2 Value ##
 ```{r}
 #Create a function to run a multilinear regression for predicted values and important variables determined earlier
@@ -433,7 +448,7 @@ REACH_18090101 <- read_csv("18090101_ByReachUpdate_Observed_Capacity.csv")
 #Universal updated BRAT version
 UNI_18090101 <- read_csv("18090101_UniversalUpdate_Observed_Capacity.csv")
 
-sum(OG_18020002$DamKM>0)
+sum(OG_18090101$DamKM>0)
 ```
 
 
@@ -446,11 +461,11 @@ sum(OG_18020002$DamKM>0)
 #Significant Variables in the BRAT Attribute Table
 
 #Subset for only segments with observed capacity
-Non_Zero_OG_18020002 <- subset(OG_18020002, DamKM != 0)
+Non_Zero_OG_18090101 <- subset(OG_18090101, DamKM != 0)
 
 #Multilinear Regression for Observed Beaver Capacity on segments with observed capacity
 MLR_subsetted_Observed <- lm(DamKM ~ iGeo_Len + iHyd_SPLow + iHyd_SP2 + iGeo_Slope + iVeg100EX + iVeg_30EX + iGeo_DA ,
-  data = Non_Zero_OG_18020002)
+  data = Non_Zero_OG_18090101)
 
 summary(MLR_subsetted_Observed)
 
@@ -461,10 +476,24 @@ summary(MLR_subsetted_Observed)
 ###Clean Up Data
 ```{r}
 #Subset data for segments with observed capacity and stream segments => 40
-subset_OG_18020002 <- subset(OG_18020002, DamKM != 0 & iGeo_Len >= 40)
+subset_OG_18090101 <- subset(OG_18090101, DamKM != 0 & iGeo_Len >= 40)
 subset_REACH_18090101 <- subset(REACH_18090101, DamKM != 0 & iGeo_Len >= 40)
 subset_UNI_18090101 <- subset(UNI_18090101, DamKM != 0 & iGeo_Len >= 40)
 
+```
+
+## Summary for Table XX
+```{r}
+Non_Zero_OG_18090101 <- subset(OG_18090101, DamKM != 0)
+nrow(Non_Zero_OG_18090101)
+nrow(OG_18090101)
+pctDams <- nrow(Non_Zero_OG_18090101)/nrow(OG_18090101)
+pctDams
+subset_OG_18090101 <- subset(OG_18090101, DamKM != 0 & iGeo_Len >= 40)
+nrow(subset_OG_18090101)
+mean(subset_OG_18090101$iGeo_Len)
+sum(OG_18090101$Join_Count)
+#join count in entire watershed = 126
 ```
 
 ### Multilinear Regression Adjusted R^2 Value ##
@@ -472,7 +501,7 @@ subset_UNI_18090101 <- subset(UNI_18090101, DamKM != 0 & iGeo_Len >= 40)
 #Call the function with your data 
 #MLR_oCC_EX(df, title)
 
-MLR_oCC_EX(subset_OG_18020002, "Original BRAT")
+MLR_oCC_EX(subset_OG_18090101, "Original BRAT")
 MLR_oCC_EX(subset_REACH_18090101, "By Reach Updated BRAT")
 MLR_oCC_EX(subset_UNI_18090101, "Universal Updated BRAT")
 ```
@@ -617,6 +646,20 @@ subset_OG_18070302 <- subset(OG_18070302, DamKM != 0 & iGeo_Len >= 40)
 subset_REACH_18070302 <- subset(REACH_18070302, DamKM != 0 & iGeo_Len >= 40)
 subset_UNI_18070302 <- subset(UNI_18070302, DamKM != 0 & iGeo_Len >= 40)
 
+```
+
+## Summary for Table XX
+```{r}
+Non_Zero_OG_18070302 <- subset(OG_18070302, DamKM != 0)
+nrow(Non_Zero_OG_18070302)
+nrow(OG_18070302)
+pctDams <- nrow(Non_Zero_OG_18070302)/nrow(OG_18070302)
+pctDams
+subset_OG_18070302 <- subset(OG_18070302, DamKM != 0 & iGeo_Len >= 40)
+nrow(subset_OG_18070302)
+mean(subset_OG_18070302$iGeo_Len)
+sum(OG_18070302$Join_Count)
+#join count in entire watershed = 48
 ```
 
 ### Multilinear Regression Adjusted R^2 Value ##
@@ -772,6 +815,20 @@ subset_UNI_18060005 <- subset(UNI_18060005, DamKM != 0 & iGeo_Len >= 40)
 
 ```
 
+## Summary for Table XX
+```{r}
+Non_Zero_OG_18060005 <- subset(OG_18060005, DamKM != 0)
+nrow(Non_Zero_OG_18060005)
+nrow(OG_18060005)
+pctDams <- nrow(Non_Zero_OG_18060005)/nrow(OG_18060005)
+pctDams
+subset_OG_18060005 <- subset(OG_18060005, DamKM != 0 & iGeo_Len >= 40)
+nrow(subset_OG_18060005)
+mean(subset_OG_18060005$iGeo_Len)
+sum(OG_18060005$Join_Count)
+#join count in entire watershed = 208
+```
+
 ### Multilinear Regression Adjusted R^2 Value ##
 ```{r}
 #Call the function with your data 
@@ -922,6 +979,20 @@ subset_OG_18050002 <- subset(OG_18050002, DamKM != 0 & iGeo_Len >= 40)
 subset_REACH_18050002 <- subset(REACH_18050002, DamKM != 0 & iGeo_Len >= 40)
 subset_UNI_18050002 <- subset(UNI_18050002, DamKM != 0 & iGeo_Len >= 40)
 
+```
+
+## Summary for Table XX
+```{r}
+Non_Zero_OG_18050002 <- subset(OG_18050002, DamKM != 0)
+nrow(Non_Zero_OG_18050002)
+nrow(OG_18050002)
+pctDams <- nrow(Non_Zero_OG_18050002)/nrow(OG_18050002)
+pctDams
+subset_OG_18050002 <- subset(OG_18050002, DamKM != 0 & iGeo_Len >= 40)
+nrow(subset_OG_18050002)
+mean(subset_OG_18050002$iGeo_Len)
+sum(OG_18050002$Join_Count)
+#join count in entire watershed = 30
 ```
 
 ### Multilinear Regression Adjusted R^2 Value ##
@@ -1076,6 +1147,20 @@ subset_UNI_18030002 <- subset(UNI_18030002, DamKM != 0 & iGeo_Len >= 40)
 
 ```
 
+## Summary for Table XX
+```{r}
+Non_Zero_OG_18030002 <- subset(OG_18030002, DamKM != 0)
+nrow(Non_Zero_OG_18030002)
+nrow(OG_18030002)
+pctDams <- nrow(Non_Zero_OG_18030002)/nrow(OG_18030002)
+pctDams
+subset_OG_18030002 <- subset(OG_18030002, DamKM != 0 & iGeo_Len >= 40)
+nrow(subset_OG_18030002)
+mean(subset_OG_18030002$iGeo_Len)
+sum(OG_18030002$Join_Count)
+#join count in entire watershed = 356
+```
+
 ### Multilinear Regression Adjusted R^2 Value ##
 ```{r}
 #Call the function with your data 
@@ -1226,6 +1311,20 @@ subset_OG_18020163 <- subset(OG_18020163, DamKM != 0 & iGeo_Len >= 40)
 subset_REACH_18020163 <- subset(REACH_18020163, DamKM != 0 & iGeo_Len >= 40)
 subset_UNI_18020163 <- subset(UNI_18020163, DamKM != 0 & iGeo_Len >= 40)
 
+```
+
+## Summary for Table XX
+```{r}
+Non_Zero_OG_18020163 <- subset(OG_18020163, DamKM != 0)
+nrow(Non_Zero_OG_18020163)
+nrow(OG_18020163)
+pctDams <- nrow(Non_Zero_OG_18020163)/nrow(OG_18020163)
+pctDams
+subset_OG_18020163 <- subset(OG_18020163, DamKM != 0 & iGeo_Len >= 40)
+nrow(subset_OG_18020163)
+mean(subset_OG_18020163$iGeo_Len)
+sum(OG_18020163$Join_Count)
+#join count in entire watershed = 11
 ```
 
 ### Multilinear Regression Adjusted R^2 Value ##
@@ -1382,6 +1481,20 @@ subset_UNI_18020123 <- subset(UNI_18020123, DamKM != 0 & iGeo_Len >= 40)
 
 ```
 
+## Summary for Table XX
+```{r}
+Non_Zero_OG_18020123 <- subset(OG_18020123, DamKM != 0)
+nrow(Non_Zero_OG_18020123)
+nrow(OG_18020123)
+pctDams <- nrow(Non_Zero_OG_18020123)/nrow(OG_18020123)
+pctDams
+subset_OG_18020123 <- subset(OG_18020123, DamKM != 0 & iGeo_Len >= 40)
+nrow(subset_OG_18020123)
+mean(subset_OG_18020123$iGeo_Len)
+sum(OG_18020123$Join_Count)
+#join count in entire watershed = 310
+```
+
 ### Multilinear Regression Adjusted R^2 Value ##
 ```{r}
 #Call the function with your data 
@@ -1532,6 +1645,20 @@ subset_OG_18020002 <- subset(OG_18020002, DamKM != 0 & iGeo_Len >= 40)
 subset_REACH_18020002 <- subset(REACH_18020002, DamKM != 0 & iGeo_Len >= 40)
 subset_UNI_18020002 <- subset(UNI_18020002, DamKM != 0 & iGeo_Len >= 40)
 
+```
+
+## Summary for Table XX
+```{r}
+Non_Zero_OG_18020002 <- subset(OG_18020002, DamKM != 0)
+nrow(Non_Zero_OG_18020002)
+nrow(OG_18020002)
+pctDams <- nrow(Non_Zero_OG_18020002)/nrow(OG_18020002)
+pctDams
+subset_OG_18020002 <- subset(OG_18020002, DamKM != 0 & iGeo_Len >= 40)
+nrow(subset_OG_18020002)
+mean(subset_OG_18020002$iGeo_Len)
+sum(OG_18020002$Join_Count)
+#join count in entire watershed = 262
 ```
 
 ### Multilinear Regression Adjusted R^2 Value ##
